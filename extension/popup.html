@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Citizen Hangar Command Link</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="popup-shell" data-state="unpaired">
+      <header class="popup-header">
+        <div>
+          <p class="eyebrow">Citizen Hangar Extension</p>
+          <h1>Command Link</h1>
+          <p class="muted">Pair the extension, trigger manual syncs, and review quick diagnostics for the Citizen Hangar dashboard.</p>
+        </div>
+        <span class="status-chip warning" id="statusChip">Not paired</span>
+      </header>
+
+      <section class="status-card glass-panel">
+        <div>
+          <p class="status-text" id="statusText">Checking extension status…</p>
+          <p class="muted tiny" id="lastSync">Last sync: —</p>
+        </div>
+        <div class="status-actions">
+          <button class="button ghost" id="syncBtn" disabled>Manual sync</button>
+          <button class="button danger ghost" id="revokeBtn" disabled>Revoke access</button>
+        </div>
+      </section>
+
+      <section class="pair-card glass-panel" id="pairingCard">
+        <div class="pair-card-header">
+          <div>
+            <h2>Pair with Citizen Hangar</h2>
+            <p class="muted tiny">Paste the 6-digit code generated in the Extension tab.</p>
+          </div>
+          <span class="badge" id="envLabel">Prod</span>
+        </div>
+        <label class="input-label" for="pairCode">Pairing code</label>
+        <div class="input-row">
+          <input id="pairCode" type="text" maxlength="6" placeholder="123456" autocomplete="one-time-code" />
+          <button class="button" id="pairBtn">Pair</button>
+        </div>
+        <p class="muted tiny">Pairing automatically performs an initial sync after the extension receives the code.</p>
+      </section>
+
+      <section class="settings-card glass-panel">
+        <div class="setting-group">
+          <div>
+            <p class="input-label">Environment</p>
+            <p class="muted tiny">Use local mode only when developing against localhost:3000.</p>
+          </div>
+          <div class="pill-toggle">
+            <label>
+              <input type="radio" name="env" id="envProd" />
+              <span>Production</span>
+            </label>
+            <label>
+              <input type="radio" name="env" id="envLocal" />
+              <span>Local</span>
+            </label>
+          </div>
+        </div>
+        <label class="checkbox">
+          <input type="checkbox" id="debugToggle" />
+          <span>Enable debug logging in extension console</span>
+        </label>
+      </section>
+
+      <section class="logs-card glass-panel">
+        <div class="logs-card-header">
+          <div>
+            <h2>Logs</h2>
+            <p class="muted tiny">Useful when reporting issues—copy/paste into support chats.</p>
+          </div>
+          <div class="logs-actions">
+            <button class="button ghost" id="showLogsBtn">Toggle logs</button>
+            <button class="button danger ghost" id="clearLogsBtn">Clear</button>
+          </div>
+        </div>
+        <pre id="logs" class="logs hidden"></pre>
+      </section>
+    </main>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

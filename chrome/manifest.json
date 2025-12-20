@@ -1,0 +1,66 @@
+{
+  "manifest_version": 3,
+  "name": "Citizen Hangar Pledge Sync",
+  "version": "1.2.0",
+  "description": "Syncs RSI pledge data with the Citizen Hangar dashboard using a secure pairing code (Chrome build).",
+  "icons": {
+    "128": "icons/125x125.png",
+    "500": "icons/500x500.png"
+  },
+  "permissions": [
+    "cookies",
+    "storage",
+    "tabs",
+    "alarms",
+    "notifications"
+  ],
+  "host_permissions": [
+    "http://localhost:3000/*",
+    "https://localhost:3000/*",
+    "http://127.0.0.1:3000/*",
+    "https://127.0.0.1:3000/*",
+    "*://localhost/*",
+    "*://127.0.0.1/*",
+    "https://citizenhangar.space/*",
+    "https://*.citizenhangar.space/*",
+    "http://citizenhangar.space/*",
+    "http://*.citizenhangar.space/*",
+    "https://robertsspaceindustries.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_icon": "icons/500x500.png",
+    "default_title": "Citizen Hangar Pledge Sync",
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://citizenhangar.space/*",
+        "https://*.citizenhangar.space/*",
+        "http://citizenhangar.space/*",
+        "http://*.citizenhangar.space/*",
+        "https://hangar.link/*",
+        "https://robertsspaceindustries.com/*",
+        "http://sctr.space/*",
+        "http://*.sctr.space/*",
+        "https://sctr.space/*",
+        "https://www.sctr.space/*",
+        "http://starhoppers.space/*",
+        "http://*.starhoppers.space/*",
+        "https://starhoppers.space/*",
+        "https://*.starhoppers.space/*",
+        "http://localhost:3000/*",
+        "https://localhost:3000/*",
+        "http://127.0.0.1:3000/*",
+        "https://127.0.0.1:3000/*",
+        "*://localhost/*",
+        "*://127.0.0.1/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ]
+}
