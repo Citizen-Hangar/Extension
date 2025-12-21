@@ -62,7 +62,7 @@ sanitize_manifest() {
 
   with open(p,'w',encoding='utf-8') as f:
     json.dump(m,f,indent=2,ensure_ascii=False)
-  PY
+PY
 }
 if [ ! -d "$SRC_DIR" ]; then
   echo "[bepp.sh] error: extension/ directory not found"
