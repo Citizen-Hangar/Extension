@@ -23,28 +23,46 @@ sanitize_manifest() {
   return 0
   fi
   echo "[bepp.sh] Sanitizing manifest for production (removing localhost/127.0.0.1 entries)"
-  python3 - <<'PY'
-import json,sys,os
-p = os.path.join(sys.argv[1],'manifest.json')
-with open(p,'r',encoding='utf-8') as f:
-  m = json.load(f)
-def filter_hosts(hosts):
-  if not isinstance(hosts,list):
-    return hosts
-  out=[]
-  for h in hosts:
-    if 'localhost' in h or '127.0.0.1' in h:
-      continue
-    out.append(h)
-  return out
-if 'host_permissions' in m:
-  m['host_permissions'] = filter_hosts(m.get('host_permissions',[]))
-if 'content_scripts' in m:
-  for cs in m['content_scripts']:
-    cs['matches'] = [x for x in cs.get('matches',[]) if ('localhost' not in x and '127.0.0.1' not in x and x != '*://localhost/*' and x != '*://127.0.0.1/*')]
-with open(p,'w',encoding='utf-8') as f:
-  json.dump(m,f,indent=2,ensure_ascii=False)
-PY
+    # call python and pass the directory as argument to avoid argv indexing errors
+    python3 - "$1" <<'PY'
+  import json,sys,os
+  dirpath = sys.argv[1]
+  p = os.path.join(dirpath,'manifest.json')
+  with open(p,'r',encoding='utf-8') as f:
+    m = json.load(f)
+
+  def keep_host(h):
+    if not isinstance(h,str):
+      return False
+    return ('localhost' not in h) and ('127.0.0.1' not in h)
+
+  # sanitize host_permissions
+  if isinstance(m.get('host_permissions'), list):
+    new_hosts = [h for h in m['host_permissions'] if keep_host(h)]
+    if new_hosts:
+      m['host_permissions'] = new_hosts
+    else:
+      m.pop('host_permissions', None)
+
+  # sanitize content_scripts matches
+  if isinstance(m.get('content_scripts'), list):
+    new_cs = []
+    for cs in m['content_scripts']:
+      matches = cs.get('matches', [])
+      if not isinstance(matches, list):
+        continue
+      filtered = [m0 for m0 in matches if keep_host(m0) and m0 not in ('*://localhost/*','*://127.0.0.1/*')]
+      if filtered:
+        cs['matches'] = filtered
+        new_cs.append(cs)
+    if new_cs:
+      m['content_scripts'] = new_cs
+    else:
+      m.pop('content_scripts', None)
+
+  with open(p,'w',encoding='utf-8') as f:
+    json.dump(m,f,indent=2,ensure_ascii=False)
+  PY
 }
 if [ ! -d "$SRC_DIR" ]; then
   echo "[bepp.sh] error: extension/ directory not found"
