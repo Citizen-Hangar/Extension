@@ -21,11 +21,14 @@ jobs:
         run: mkdir -p dist
 
       - name: Decode `CHROME_PEM_BASE64` to chrome.pem (if provided)
-        if: ${{ secrets.CHROME_PEM_BASE64 != '' }}
         run: |
-          echo "Decoding chrome.pem from CHROME_PEM_BASE64"
-          echo "${{ secrets.CHROME_PEM_BASE64 }}" | base64 -d > chrome.pem
-          ls -la chrome.pem || true
+          if [ -n "${{ secrets.CHROME_PEM_BASE64 }}" ]; then
+            echo "Decoding chrome.pem from CHROME_PEM_BASE64"
+            echo "${{ secrets.CHROME_PEM_BASE64 }}" | base64 -d > chrome.pem
+            ls -la chrome.pem || true
+          else
+            echo "CHROME_PEM_BASE64 not provided; skipping chrome.pem decode"
+          fi
 
       - name: Run CI packaging helper
         run: |
