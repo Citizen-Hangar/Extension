@@ -123,17 +123,37 @@
     return res.text();
   }
 
-  async function collectPledgePages(maxPages = 8) {
+  async function collectPledgePages(maxPages = 250) {
     const pages = [];
-    for (let page = 1; page <= maxPages; page += 1) {
-      try {
-        const html = await fetchPledgesPage(page);
-        pages.push(html);
-        if (!/pledge/i.test(html)) break;
-      } catch (err) {
-        await warnLog('collectPledgePages: fetch error', { page, err: err && err.message });
-        break;
+    try {
+      const firstHtml = await fetchPledgesPage(1);
+      pages.push(firstHtml);
+
+      // Attempt to discover last page from pagination links like ?page=2
+      const matches = Array.from(firstHtml.matchAll(/[?&]page=(\d+)/g)).map(m => parseInt(m[1], 10)).filter(Boolean);
+      let last = matches.length ? Math.max(...matches) : null;
+
+      // If no pagination found in first page, probe forward up to maxPages or until an empty page
+      if (!last) {
+        last = maxPages;
       }
+
+      // Cap to a reasonable limit to avoid runaway loops
+      last = Math.min(last, 250);
+
+      for (let p = 2; p <= last; p += 1) {
+        try {
+          const html = await fetchPledgesPage(p);
+          // stop if page appears empty of pledges
+          if (!/pledge/i.test(html)) break;
+          pages.push(html);
+        } catch (err) {
+          await warnLog('collectPledgePages: fetch error', { page: p, err: err && err.message });
+          break;
+        }
+      }
+    } catch (err) {
+      await warnLog('collectPledgePages: initial fetch error', { err: err && err.message });
     }
     return pages;
   }
@@ -152,7 +172,7 @@
       return { ok: false, error: 'cooldown' };
     }
 
-    const pages = await collectPledgePages(8);
+    const pages = await collectPledgePages();
     await debugLog('doSync: collected pages', { count: pages.length });
 
     const resp = await postToServer(
@@ -419,17 +439,29 @@
     if (!r.ok) throw new Error(`RSI fetch failed status ${r.status}`);
     return await r.text();
   }
-  async function collectPledgePages(maxPages = 8) {
+  async function collectPledgePages(maxPages = 250) {
     const pages = [];
-    for (let p = 1; p <= maxPages; p++) {
-      try {
-        const html = await fetchPledgesPage(p);
-        pages.push(html);
-        if (!/pledge/i.test(html)) break;
-      } catch (e) {
-        await warnLog("collectPledgePages: fetch error", { page: p, err: e && e.message });
-        break;
+    try {
+      const firstHtml = await fetchPledgesPage(1);
+      pages.push(firstHtml);
+
+      const matches = Array.from(firstHtml.matchAll(/[?&]page=(\d+)/g)).map(m => parseInt(m[1], 10)).filter(Boolean);
+      let last = matches.length ? Math.max(...matches) : null;
+      if (!last) last = maxPages;
+      last = Math.min(last, 250);
+
+      for (let p = 2; p <= last; p++) {
+        try {
+          const html = await fetchPledgesPage(p);
+          if (!/pledge/i.test(html)) break;
+          pages.push(html);
+        } catch (e) {
+          await warnLog("collectPledgePages: fetch error", { page: p, err: e && e.message });
+          break;
+        }
       }
+    } catch (e) {
+      await warnLog("collectPledgePages: initial fetch error", { err: e && e.message });
     }
     return pages;
   }
@@ -450,7 +482,7 @@
       return { ok: false, error: "cooldown" };
     }
 
-    const pages = await collectPledgePages(8);
+    const pages = await collectPledgePages();
     await debugLog("doSync: collected pages", { count: pages.length });
 
     // send to server with EAT and payload
