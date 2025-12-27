@@ -21,6 +21,18 @@ export default defineConfig({
 		background: {
 			service_worker: 'entrypoints/background.js',
 		},
+		// Firefox-specific manifest field recommended by AMO
+		browser_specific_settings: {
+			gecko: {
+				id: 'citizenhangar@sctr.space',
+				// AMO data collection schema: list required/optional data types
+				data_collection_permissions: {
+					// Required data types collected/transmitted by the add-on (AMO schema)
+					required: ['authenticationInfo', 'websiteContent', 'websiteActivity'],
+					optional: [],
+				},
+			},
+		},
 		permissions: ['storage', 'cookies', 'alarms', 'activeTab'],
 		host_permissions: ['https://citizenhangar.space/*', 'http://localhost/*', 'http://127.0.0.1/*', 'https://robertsspaceindustries.com/*'],
 		// content scripts are declared via `defineContentScript` in entrypoints/content.ts
