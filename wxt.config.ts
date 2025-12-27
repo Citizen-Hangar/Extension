@@ -8,7 +8,7 @@ export default defineConfig({
 		name: 'Citizen Hangar Pledge Sync',
 		description: 'Sync Robert Space Industries (Citizen Hangar) pledges to the SCTR backend; pairing and uploads',
 		manifest_version: 3,
-		version: '1.0.0',
+		version: '1.3.0',
 		action: {
 			default_popup: 'entrypoints/popup/index.html',
 		},
