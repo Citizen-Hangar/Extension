@@ -1,7 +1,7 @@
 export default defineContentScript({
   matches: ['https://citizenhangar.space/*', 'http://localhost/*', 'http://127.0.0.1/*'],
   main() {
-    const runtime = typeof browser !== 'undefined' ? browser.runtime : (window as any).chrome?.runtime;
+    const runtime = (globalThis as any).browser?.runtime ?? (globalThis as any).chrome?.runtime;
     const CHANNEL_NAMES = ['CITIZEN_HANGAR_EXTENSION', 'SCTR_EXTENSION'];
     const READY_EVENTS = ['citizen-hangar-extension-ready', 'sctr-extension-ready'];
     const allowedOriginPatterns = [
@@ -14,29 +14,65 @@ export default defineContentScript({
     const isAllowedOrigin = (origin = '') => allowedOriginPatterns.some((pattern) => pattern.test(origin));
 
     function sendRuntimeMessage(payload: any) {
-      // If the `browser` namespace exists (Promise-based), use it directly.
-      if (typeof (window as any).browser !== 'undefined') {
-        try {
-          console.debug('content: sending message via browser.runtime', payload);
-          return (window as any).browser.runtime.sendMessage(payload);
-        } catch (err) {
-          console.warn('content: browser.runtime.sendMessage threw', err);
-        }
-      }
+      // Helper: wait for a runtime to appear (browser or chrome) for up to `timeoutMs`.
+      const waitForRuntime = (timeoutMs = 5000, pollMs = 100) => {
+        const g = globalThis as any;
+        if (g.browser?.runtime || g.chrome?.runtime) return Promise.resolve(true);
+        return new Promise<boolean>((resolve) => {
+          const start = Date.now();
+          const id = setInterval(() => {
+            if (g.browser?.runtime || g.chrome?.runtime) {
+              clearInterval(id);
+              resolve(true);
+              return;
+            }
+            if (Date.now() - start >= timeoutMs) {
+              clearInterval(id);
+              resolve(false);
+            }
+          }, pollMs);
+        });
+      };
 
-      // Fallback for chrome.* which uses callbacks — wrap in a Promise.
-      return new Promise((resolve) => {
-        try {
-          console.debug('content: sending message via chrome.runtime (callback)', payload);
-          (window as any).chrome.runtime.sendMessage(payload, (response: any) => {
-            const err = (window as any).chrome && (window as any).chrome.runtime && (window as any).chrome.runtime.lastError;
-            if (err) resolve({ ok: false, error: (err as any).message || 'runtime_error' });
-            else resolve(response);
-          });
-        } catch (err) {
-          resolve({ ok: false, error: (err as any) && (err as any).message ? (err as any).message : 'runtime_error' });
+      // Attempt to use the Promise-based `browser.runtime` first; if not present, wait briefly for the runtime.
+      return (async () => {
+        const g = globalThis as any;
+        if (g.browser && g.browser.runtime) {
+          try {
+            console.debug('content: sending message via browser.runtime', payload);
+            return await g.browser.runtime.sendMessage(payload);
+          } catch (err) {
+            console.warn('content: browser.runtime.sendMessage threw', err);
+            return { ok: false, error: (err && err.message) || 'runtime_error' };
+          }
         }
-      });
+
+        const available = await waitForRuntime(5000, 100);
+        if (!available) return { ok: false, error: 'no_runtime_available' };
+
+        // If browser runtime appeared, use it.
+        if (g.browser && g.browser.runtime) {
+          try {
+            return await g.browser.runtime.sendMessage(payload);
+          } catch (err) {
+            return { ok: false, error: (err && err.message) || 'runtime_error' };
+          }
+        }
+
+        // Otherwise use chrome.runtime (callback) wrapped into a Promise.
+        return new Promise((resolve) => {
+          try {
+            console.debug('content: sending message via chrome.runtime (callback)', payload);
+            g.chrome.runtime.sendMessage(payload, (response: any) => {
+              const err = g.chrome && g.chrome.runtime && g.chrome.runtime.lastError;
+              if (err) resolve({ ok: false, error: (err as any).message || 'runtime_error' });
+              else resolve(response);
+            });
+          } catch (err) {
+            resolve({ ok: false, error: (err && err.message) || 'runtime_error' });
+          }
+        });
+      })();
     }
 
     function reply(origin: string, payload: any, channel = CHANNEL_NAMES[0]) {

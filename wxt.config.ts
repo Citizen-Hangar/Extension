@@ -5,12 +5,18 @@ const userDataDir = path.resolve(process.cwd(), '.wxt', 'chrome-data').replace(/
 
 export default defineConfig({
 	manifest: {
-		name: 'SCTR / Starhoppers',
-		description: 'Sync Citizen Hangar pledges to SCTR backend; pairing + uploads',
+		name: 'Citizen Hangar Pledge Sync',
+		description: 'Sync Robert Space Industries (Citizen Hangar) pledges to the SCTR backend; pairing and uploads',
 		manifest_version: 3,
 		version: '1.0.0',
 		action: {
 			default_popup: 'entrypoints/popup/index.html',
+		},
+		icons: {
+			16: 'icon/16.png',
+			32: 'icon/32.png',
+			48: 'icon/48.png',
+			128: 'icon/128.png'
 		},
 		background: {
 			service_worker: 'entrypoints/background.js',

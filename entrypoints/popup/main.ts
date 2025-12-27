@@ -11,7 +11,7 @@ function createEl<T extends HTMLElement = HTMLElement>(tag: string, props?: Reco
 app.innerHTML = '';
 
 const title = createEl('h1');
-title.textContent = 'SCTR Extension';
+title.textContent = 'Citizen Hangar Pledge Sync';
 app.appendChild(title);
 
 const status = createEl<HTMLDivElement>('div');
