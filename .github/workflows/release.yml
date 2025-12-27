@@ -22,8 +22,8 @@ jobs:
 
       - name: Zip extensions
         run: |
-          npx wxt zip
-          npx wxt zip:firefox
+          npm run zip
+          npm run zip:firefox
 
       - name: Submit to stores (Firefox only for now)
         env:
