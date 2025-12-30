@@ -1,5 +1,9 @@
+const hostMatchesBase = ['https://citizenhangar.space/*'];
+const isDev = !(typeof process.env.FIREFOX_JWT_ISSUER === 'string' && process.env.FIREFOX_JWT_ISSUER.trim() !== '');
+const matches = isDev ? [...hostMatchesBase, 'http://localhost/*', 'http://127.0.0.1/*'] : hostMatchesBase;
+
 export default defineContentScript({
-  matches: ['https://citizenhangar.space/*', 'http://localhost/*', 'http://127.0.0.1/*'],
+  matches,
   main() {
     const runtime = (globalThis as any).browser?.runtime ?? (globalThis as any).chrome?.runtime;
     const CHANNEL_NAMES = ['CITIZEN_HANGAR_EXTENSION', 'SCTR_EXTENSION'];

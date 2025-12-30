@@ -5,9 +5,10 @@ const userDataDir = path.resolve(process.cwd(), '.wxt', 'chrome-data').replace(/
 
 export default defineConfig({
   manifest: (env: ConfigEnv) => {
-    // Consider CI (GitHub Actions) as production. All other runs are development.
-    const isCi = process.env.GITHUB_ACTIONS === 'true';
-    const isDev = !isCi;
+    // Treat presence of FIREFOX_JWT_ISSUER as production indicator.
+    // If the env var exists, consider this a production build and do not include local hosts.
+    const hasFirefoxJwtIssuer = typeof process.env.FIREFOX_JWT_ISSUER === 'string' && process.env.FIREFOX_JWT_ISSUER.trim() !== '';
+    const isDev = !hasFirefoxJwtIssuer;
     const hostPermissionsBase = [
       'https://citizenhangar.space/*',
       'https://robertsspaceindustries.com/*',
@@ -21,7 +22,7 @@ export default defineConfig({
       description:
         'Sync Robert Space Industries pledges to the Citizen Hangar backend; pairing and uploads',
       manifest_version: 3,
-      version: '1.3.2',
+      version: '1.3.3',
       action: {
         default_popup: 'entrypoints/popup/index.html',
       },
@@ -46,7 +47,7 @@ export default defineConfig({
           },
         },
       },
-      permissions: ['storage', 'cookies', 'alarms', 'activeTab'],
+      permissions: ['storage', 'alarms'],
       host_permissions,
       // content scripts are declared via `defineContentScript` in entrypoints/content.ts
     };
