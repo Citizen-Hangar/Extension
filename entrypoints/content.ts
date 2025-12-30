@@ -1,5 +1,6 @@
 const hostMatchesBase = ['https://citizenhangar.space/*'];
-const isDev = !(typeof process.env.FIREFOX_JWT_ISSUER === 'string' && process.env.FIREFOX_JWT_ISSUER.trim() !== '');
+const hasFirefoxJwtIssuer = typeof process !== 'undefined' && typeof process.env === 'object' && typeof process.env.FIREFOX_JWT_ISSUER === 'string' && process.env.FIREFOX_JWT_ISSUER.trim() !== '';
+const isDev = !hasFirefoxJwtIssuer;
 const matches = isDev ? [...hostMatchesBase, 'http://localhost/*', 'http://127.0.0.1/*'] : hostMatchesBase;
 
 export default defineContentScript({

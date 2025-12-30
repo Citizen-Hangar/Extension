@@ -22,7 +22,7 @@ export default defineConfig({
       description:
         'Sync Robert Space Industries pledges to the Citizen Hangar backend; pairing and uploads',
       manifest_version: 3,
-      version: '1.3.3',
+      version: '1.3.4',
       action: {
         default_popup: 'entrypoints/popup/index.html',
       },
