@@ -27,10 +27,10 @@ jobs:
 
       - name: Submit to stores (Firefox only for now)
         env:
-#          CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
-#          CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
-#          CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
-#          CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
+#         CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+#         CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
+#         CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
+#         CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
           FIREFOX_EXTENSION_ID: "citizenhangar@sctr.space"
           FIREFOX_JWT_ISSUER: ${{ secrets.FIREFOX_JWT_ISSUER }}
           FIREFOX_JWT_SECRET: ${{ secrets.FIREFOX_JWT_SECRET }}
